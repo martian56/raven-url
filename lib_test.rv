@@ -1,0 +1,48 @@
+import std/string
+import std/collections
+import std/test { assert_eq_str, assert_true, assert_false }
+import "./lib" { Url, parse_query, build_query, encode, decode }
+
+fun test_full_url() {
+    let u = Url.parse("https://api.example.com:8080/v1/items?page=2&q=hi#top")
+    assert_eq_str(u.scheme, "https")
+    assert_eq_str(u.host, "api.example.com")
+    assert_eq_str(u.port, "8080")
+    assert_eq_str(u.path, "/v1/items")
+    assert_eq_str(u.query, "page=2&q=hi")
+    assert_eq_str(u.fragment, "top")
+    assert_true(u.is_absolute())
+}
+
+fun test_minimal() {
+    let u = Url.parse("example.com/path")
+    assert_eq_str(u.scheme, "")
+    assert_eq_str(u.host, "example.com")
+    assert_eq_str(u.path, "/path")
+    assert_false(u.is_absolute())
+}
+
+fun test_params_decoded() {
+    let p = Url.parse("https://x.com/?page=2&q=hello%20world").params()
+    assert_eq_str(p.get_or("page", ""), "2")
+    assert_eq_str(p.get_or("q", ""), "hello world")
+}
+
+fun test_round_trip_to_string() {
+    let s = "https://x.com:443/a/b?c=d#e"
+    assert_eq_str(Url.parse(s).to_string(), s)
+}
+
+fun test_encode_decode_round_trip() {
+    let original = "a b & c = d / e ? f"
+    assert_eq_str(decode(encode(original)), original)
+}
+
+fun test_build_query_round_trip() {
+    let m: Map<String, String> = Map.new()
+    m.set("name", "a b")
+    m.set("tag", "x&y")
+    let back = parse_query(build_query(m))
+    assert_eq_str(back.get_or("name", ""), "a b")
+    assert_eq_str(back.get_or("tag", ""), "x&y")
+}

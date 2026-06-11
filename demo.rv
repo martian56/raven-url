@@ -1,0 +1,21 @@
+// Build and run: raven build demo.rv -o demo && ./demo
+import std/io { println }
+import std/string
+import std/collections
+import "./lib" { Url, build_query }
+
+fun main() {
+    let u = Url.parse("https://api.example.com:8080/v1/items?page=2&q=hello%20world#results")
+    println("host:     ".concat(u.host))
+    println("port:     ".concat(u.port))
+    println("path:     ".concat(u.path))
+    println("fragment: ".concat(u.fragment))
+    let p = u.params()
+    println("page:     ".concat(p.get_or("page", "")))
+    println("q:        ".concat(p.get_or("q", "")))
+
+    let m: Map<String, String> = Map.new()
+    m.set("name", "raven board")
+    m.set("limit", "10")
+    println("built:    ".concat(build_query(m)))
+}

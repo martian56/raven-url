@@ -1,0 +1,145 @@
+// raven-url: parse URLs and work with query strings.
+//
+//     import "github.com/martian56/raven-url" { Url, build_query }
+//
+//     let u = Url.parse("https://api.example.com:8080/v1/items?page=2#top")
+//     u.host            // "api.example.com"
+//     u.params()        // { "page": "2" }
+//
+// Percent-encoding is handled by std/encoding; the encode/decode helpers here
+// just forward to it.
+
+import std/string
+import std/collections
+import std/encoding { url_encode, url_decode }
+
+// The pieces of a URL. Any piece that is absent is an empty string.
+struct Url {
+    scheme: String,
+    host: String,
+    port: String,
+    path: String,
+    query: String,
+    fragment: String,
+}
+
+impl Url {
+    // Split a URL into its parts. Parsing is lenient: a missing scheme, port,
+    // path, query, or fragment just leaves that field empty.
+    fun parse(s: String) -> Url {
+        let rest = s
+        let scheme = ""
+        let si = rest.index_of("://")
+        if si >= 0 {
+            scheme = rest.substring(0, si)
+            rest = rest.substring(si + 3, rest.length())
+        }
+        let fragment = ""
+        let hi = rest.index_of("#")
+        if hi >= 0 {
+            fragment = rest.substring(hi + 1, rest.length())
+            rest = rest.substring(0, hi)
+        }
+        let query = ""
+        let qi = rest.index_of("?")
+        if qi >= 0 {
+            query = rest.substring(qi + 1, rest.length())
+            rest = rest.substring(0, qi)
+        }
+        let path = ""
+        let authority = rest
+        let pi = rest.index_of("/")
+        if pi >= 0 {
+            path = rest.substring(pi, rest.length())
+            authority = rest.substring(0, pi)
+        }
+        let host = authority
+        let port = ""
+        let ci = authority.index_of(":")
+        if ci >= 0 {
+            port = authority.substring(ci + 1, authority.length())
+            host = authority.substring(0, ci)
+        }
+        return Url { scheme, host, port, path, query, fragment }
+    }
+
+    // The query string parsed into a map, with values percent-decoded.
+    fun params(self) -> Map<String, String> {
+        return parse_query(self.query)
+    }
+
+    // Whether the URL has both a scheme and a host.
+    fun is_absolute(self) -> Bool {
+        return self.scheme != "" && self.host != ""
+    }
+
+    // Reassemble the URL from its parts.
+    fun to_string(self) -> String {
+        let out = ""
+        if self.scheme != "" {
+            out = "${self.scheme}://"
+        }
+        out = out.concat(self.host)
+        if self.port != "" {
+            out = "${out}:${self.port}"
+        }
+        out = out.concat(self.path)
+        if self.query != "" {
+            out = "${out}?${self.query}"
+        }
+        if self.fragment != "" {
+            out = "${out}#${self.fragment}"
+        }
+        return out
+    }
+}
+
+// Parse a `key=value&key2=value2` string into a map. Keys and values are
+// percent-decoded; a key with no `=` maps to the empty string.
+fun parse_query(q: String) -> Map<String, String> {
+    let out: Map<String, String> = Map.new()
+    if q == "" {
+        return out
+    }
+    let pairs = q.split("&")
+    let i = 0
+    while i < pairs.len() {
+        let pair = pairs[i]
+        let eq = pair.index_of("=")
+        if eq < 0 {
+            out.set(url_decode(pair), "")
+        } else {
+            let key = url_decode(pair.substring(0, eq))
+            let value = url_decode(pair.substring(eq + 1, pair.length()))
+            out.set(key, value)
+        }
+        i += 1
+    }
+    return out
+}
+
+// Build a `key=value&...` string from a map, percent-encoding both sides.
+fun build_query(params: Map<String, String>) -> String {
+    let keys = params.keys()
+    let out = ""
+    let i = 0
+    while i < keys.len() {
+        if i > 0 {
+            out = out.concat("&")
+        }
+        let k = keys[i]
+        out = "${out}${url_encode(k)}=${url_encode(params.get_or(k, ""))}"
+        i += 1
+    }
+    return out
+}
+
+// Percent-encode a string (forwards to std/encoding).
+fun encode(s: String) -> String {
+    return url_encode(s)
+}
+
+// Percent-decode a string (forwards to std/encoding).
+fun decode(s: String) -> String {
+    return url_decode(s)
+}
