@@ -1,5 +1,7 @@
 # raven-url
 
+[![CI](https://github.com/martian56/raven-url/actions/workflows/ci.yml/badge.svg)](https://github.com/martian56/raven-url/actions/workflows/ci.yml)
+
 Pulls a URL apart into its pieces and helps with query strings. Percent-encoding
 is handled by `std/encoding`, so this leans on that and adds the parsing and the
 query map on top. No third-party dependencies.
@@ -8,12 +10,12 @@ query map on top. No third-party dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-url" = "0.1"
+"github.com/martian56/raven-url" = "v0.1.0"
 ```
 
 ## Usage
 
-```raven
+```rust
 import "github.com/martian56/raven-url" { Url }
 
 let u = Url.parse("https://api.example.com:8080/v1/items?page=2&q=hi#top")
@@ -31,7 +33,7 @@ whether both a scheme and host were there.
 
 ## Query strings
 
-```raven
+```rust
 import "github.com/martian56/raven-url" { parse_query, build_query }
 
 let m = parse_query("page=2&q=hello%20world")   // { "page": "2", "q": "hello world" }
