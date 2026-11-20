@@ -1,6 +1,6 @@
 // raven-url: parse URLs and work with query strings.
 //
-//     import "github.com/martian56/raven-url" { Url, build_query }
+//     from "github.com/martian56/raven-url" import Url, build_query
 //
 //     let u = Url.parse("https://api.example.com:8080/v1/items?page=2#top")
 //     u.host            // "api.example.com"
@@ -9,73 +9,80 @@
 // Percent-encoding is handled by std/encoding; the encode/decode helpers here
 // just forward to it.
 
-import std/string
-import std/collections
-import std/encoding { url_encode, url_decode }
+import std.string
+import std.collections
+from std.encoding import url_encode, url_decode
 
 // The pieces of a URL. Any piece that is absent is an empty string.
-struct Url {
-    scheme: String,
-    host: String,
-    port: String,
-    path: String,
-    query: String,
-    fragment: String,
+class Url {
+    scheme: str
+    host: str
+    port: str
+    path: str
+    query: str
+    fragment: str
 }
 
 impl Url {
     // Split a URL into its parts. Parsing is lenient: a missing scheme, port,
     // path, query, or fragment just leaves that field empty.
-    fun parse(s: String) -> Url {
-        let rest = s
-        let scheme = ""
+    fun parse(s: str) -> Url {
+        var rest = s
+        var scheme = ""
         let si = rest.index_of("://")
         if si >= 0 {
             scheme = rest.substring(0, si)
             rest = rest.substring(si + 3, rest.length())
         }
-        let fragment = ""
+        var fragment = ""
         let hi = rest.index_of("#")
         if hi >= 0 {
             fragment = rest.substring(hi + 1, rest.length())
             rest = rest.substring(0, hi)
         }
-        let query = ""
+        var query = ""
         let qi = rest.index_of("?")
         if qi >= 0 {
             query = rest.substring(qi + 1, rest.length())
             rest = rest.substring(0, qi)
         }
-        let path = ""
-        let authority = rest
+        var path = ""
+        var authority = rest
         let pi = rest.index_of("/")
         if pi >= 0 {
             path = rest.substring(pi, rest.length())
             authority = rest.substring(0, pi)
         }
-        let host = authority
-        let port = ""
+        var host = authority
+        var port = ""
         let ci = authority.index_of(":")
         if ci >= 0 {
             port = authority.substring(ci + 1, authority.length())
             host = authority.substring(0, ci)
         }
-        return Url { scheme, host, port, path, query, fragment }
+        return Url(
+            scheme: scheme,
+            host: host,
+            port: port,
+            path: path,
+            query: query,
+            fragment: fragment,
+        )
     }
 
     // The query string parsed into a map, with values percent-decoded.
-    fun params(self) -> Map<String, String> {
+    fun params(self) -> dict[str, str] {
         return parse_query(self.query)
     }
 
     // Whether the URL has both a scheme and a host.
-    fun is_absolute(self) -> Bool {
-        return self.scheme != "" && self.host != ""
+    fun is_absolute(self) -> bool {
+        return self.scheme != "" and self.host != ""
     }
 
     // Reassemble the URL from its parts.
-    fun to_string(self) -> String {
-        let out = ""
+    fun to_string(self) -> str {
+        var out = ""
         if self.scheme != "" {
             out = "${self.scheme}://"
         }
@@ -96,13 +103,13 @@ impl Url {
 
 // Parse a `key=value&key2=value2` string into a map. Keys and values are
 // percent-decoded; a key with no `=` maps to the empty string.
-fun parse_query(q: String) -> Map<String, String> {
-    let out: Map<String, String> = Map.new()
+fun parse_query(q: str) -> dict[str, str] {
+    let out: dict[str, str] = Map.new()
     if q == "" {
         return out
     }
     let pairs = q.split("&")
-    let i = 0
+    var i = 0
     while i < pairs.len() {
         let pair = pairs[i]
         let eq = pair.index_of("=")
@@ -119,10 +126,10 @@ fun parse_query(q: String) -> Map<String, String> {
 }
 
 // Build a `key=value&...` string from a map, percent-encoding both sides.
-fun build_query(params: Map<String, String>) -> String {
+fun build_query(params: dict[str, str]) -> str {
     let keys = params.keys()
-    let out = ""
-    let i = 0
+    var out = ""
+    var i = 0
     while i < keys.len() {
         if i > 0 {
             out = out.concat("&")
@@ -135,11 +142,11 @@ fun build_query(params: Map<String, String>) -> String {
 }
 
 // Percent-encode a string (forwards to std/encoding).
-fun encode(s: String) -> String {
+fun encode(s: str) -> str {
     return url_encode(s)
 }
 
 // Percent-decode a string (forwards to std/encoding).
-fun decode(s: String) -> String {
+fun decode(s: str) -> str {
     return url_decode(s)
 }

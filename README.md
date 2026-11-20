@@ -16,7 +16,7 @@ query map on top. No third-party dependencies.
 ## Usage
 
 ```rust
-import "github.com/martian56/raven-url" { Url }
+from "github.com/martian56/raven-url" import Url
 
 let u = Url.parse("https://api.example.com:8080/v1/items?page=2&q=hi#top")
 u.scheme      // "https"
@@ -34,11 +34,11 @@ whether both a scheme and host were there.
 ## Query strings
 
 ```rust
-import "github.com/martian56/raven-url" { parse_query, build_query }
+from "github.com/martian56/raven-url" import parse_query, build_query
 
 let m = parse_query("page=2&q=hello%20world")   // { "page": "2", "q": "hello world" }
 
-let out: Map<String, String> = Map.new()
+let out: dict[str, str] = Map.new()
 out.set("name", "a b")
 build_query(out)                                 // "name=a%20b"
 ```
