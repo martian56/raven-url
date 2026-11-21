@@ -1,7 +1,7 @@
-import std/string
-import std/collections
-import std/test { assert_eq_str, assert_true, assert_false }
-import "./lib" { Url, parse_query, build_query, encode, decode }
+import std.string
+import std.collections
+from std.test import assert_eq_str, assert_true, assert_false
+from "./lib" import Url, parse_query, build_query, encode, decode
 
 fun test_full_url() {
     let u = Url.parse("https://api.example.com:8080/v1/items?page=2&q=hi#top")
@@ -39,7 +39,7 @@ fun test_encode_decode_round_trip() {
 }
 
 fun test_build_query_round_trip() {
-    let m: Map<String, String> = Map.new()
+    let m: dict[str, str] = Map.new()
     m.set("name", "a b")
     m.set("tag", "x&y")
     let back = parse_query(build_query(m))
