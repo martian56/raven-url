@@ -10,7 +10,7 @@ query map on top. No third-party dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-url" = "v0.2.0"
+"github.com/martian56/raven-url" = "v0.3.0"
 ```
 
 ## Usage
@@ -38,9 +38,7 @@ from "github.com/martian56/raven-url" import parse_query, build_query
 
 let m = parse_query("page=2&q=hello%20world")   // { "page": "2", "q": "hello world" }
 
-let out: dict[str, str] = Map.new()
-out.set("name", "a b")
-build_query(out)                                 // "name=a%20b"
+build_query({"name": "a b"})                     // "name=a%20b"
 ```
 
 Values are percent-decoded on the way in and encoded on the way out. The bare
@@ -48,10 +46,12 @@ Values are percent-decoded on the way in and encoded on the way out. The bare
 
 ## API
 
-`Url.parse(s)` gives you a `Url`; read its `scheme`, `host`, `port`, `path`,
-`query`, and `fragment` fields, and call `params()`, `is_absolute()`, or
-`to_string()`. The free functions are `parse_query(q)`, `build_query(map)`,
-`encode(s)`, and `decode(s)`.
+`Url.parse(s)` gives you a `Url`; read its `scheme`, `user`, `password`, `host`,
+`port`, `path`, `query`, and `fragment` fields, and call `params()`,
+`is_absolute()`, or `to_string()`. Credentials (`postgres://user:password@localhost:5432`)
+come back percent-decoded in `user` and `password`, and an IPv6 host
+(`http://[::1]:8080`) comes back without its brackets. The free functions are
+`parse_query(q)`, `build_query(map)`, `encode(s)`, and `decode(s)`.
 
 ## License
 

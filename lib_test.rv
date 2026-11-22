@@ -46,3 +46,32 @@ fun test_build_query_round_trip() {
     assert_eq_str(back.get_or("name", ""), "a b")
     assert_eq_str(back.get_or("tag", ""), "x&y")
 }
+
+fun test_userinfo() {
+    let u = Url.parse("postgres://user:password@localhost:5432/orders?sslmode=require")
+    assert_eq_str(u.user, "user")
+    assert_eq_str(u.password, "password")
+    assert_eq_str(u.host, "localhost")
+    assert_eq_str(u.port, "5432")
+    assert_eq_str(u.path, "/orders")
+    assert_eq_str(u.to_string(), "postgres://user:password@localhost:5432/orders?sslmode=require")
+}
+
+fun test_user_without_password() {
+    let u = Url.parse("ftp://an%40on@files.example.com/pub")
+    assert_eq_str(u.user, "an@on")
+    assert_eq_str(u.password, "")
+    assert_eq_str(u.host, "files.example.com")
+    assert_eq_str(u.to_string(), "ftp://an%40on@files.example.com/pub")
+}
+
+fun test_ipv6_host() {
+    let u = Url.parse("http://[::1]:8080/health")
+    assert_eq_str(u.host, "::1")
+    assert_eq_str(u.port, "8080")
+    assert_eq_str(u.path, "/health")
+    assert_eq_str(u.to_string(), "http://[::1]:8080/health")
+    let bare = Url.parse("http://[fe80::2]/")
+    assert_eq_str(bare.host, "fe80::2")
+    assert_eq_str(bare.port, "")
+}

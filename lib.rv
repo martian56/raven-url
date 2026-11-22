@@ -21,6 +21,8 @@ class Url {
     path: str
     query: str
     fragment: str
+    user: str = ""
+    password: str = ""
 }
 
 impl Url {
@@ -53,12 +55,38 @@ impl Url {
             path = rest.substring(pi, rest.length())
             authority = rest.substring(0, pi)
         }
+        var user = ""
+        var password = ""
+        let at = authority.last_index_of("@")
+        if at >= 0 {
+            let info = authority.substring(0, at)
+            authority = authority.substring(at + 1, authority.length())
+            let colon = info.index_of(":")
+            if colon >= 0 {
+                user = url_decode(info.substring(0, colon))
+                password = url_decode(info.substring(colon + 1, info.length()))
+            } else {
+                user = url_decode(info)
+            }
+        }
         var host = authority
         var port = ""
-        let ci = authority.index_of(":")
-        if ci >= 0 {
-            port = authority.substring(ci + 1, authority.length())
-            host = authority.substring(0, ci)
+        if authority.starts_with("[") {
+            // An IPv6 literal: `[::1]` or `[::1]:8080`.
+            let close = authority.index_of("]")
+            if close >= 0 {
+                host = authority.substring(1, close)
+                let after = authority.substring(close + 1, authority.length())
+                if after.starts_with(":") {
+                    port = after.substring(1, after.length())
+                }
+            }
+        } else {
+            let ci = authority.last_index_of(":")
+            if ci >= 0 {
+                port = authority.substring(ci + 1, authority.length())
+                host = authority.substring(0, ci)
+            }
         }
         return Url(
             scheme: scheme,
@@ -67,6 +95,8 @@ impl Url {
             path: path,
             query: query,
             fragment: fragment,
+            user: user,
+            password: password,
         )
     }
 
@@ -86,7 +116,18 @@ impl Url {
         if self.scheme != "" {
             out = "${self.scheme}://"
         }
-        out = out.concat(self.host)
+        if self.user != "" {
+            out = out.concat(url_encode(self.user))
+            if self.password != "" {
+                out = "${out}:${url_encode(self.password)}"
+            }
+            out = out.concat("@")
+        }
+        if self.host.contains(":") {
+            out = "${out}[${self.host}]"
+        } else {
+            out = out.concat(self.host)
+        }
         if self.port != "" {
             out = "${out}:${self.port}"
         }
