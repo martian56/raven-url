@@ -48,7 +48,7 @@ Values are percent-decoded on the way in and encoded on the way out. The bare
 
 `Url.parse(s)` gives you a `Url`; read its `scheme`, `user`, `password`, `host`,
 `port`, `path`, `query`, and `fragment` fields, and call `params()`,
-`is_absolute()`, or `to_string()`. Credentials (`postgres://app:secret@db:5432`)
+`is_absolute()`, or `to_string()`. Credentials (`postgres://user:password@localhost:5432`)
 come back percent-decoded in `user` and `password`, and an IPv6 host
 (`http://[::1]:8080`) comes back without its brackets. The free functions are
 `parse_query(q)`, `build_query(map)`, `encode(s)`, and `decode(s)`.

@@ -48,20 +48,21 @@ fun test_build_query_round_trip() {
 }
 
 fun test_userinfo() {
-    let u = Url.parse("postgres://app:p%40ss@db.internal:5432/orders?sslmode=require")
-    assert_eq_str(u.user, "app")
-    assert_eq_str(u.password, "p@ss")
-    assert_eq_str(u.host, "db.internal")
+    let u = Url.parse("postgres://user:password@localhost:5432/orders?sslmode=require")
+    assert_eq_str(u.user, "user")
+    assert_eq_str(u.password, "password")
+    assert_eq_str(u.host, "localhost")
     assert_eq_str(u.port, "5432")
     assert_eq_str(u.path, "/orders")
-    assert_eq_str(u.to_string(), "postgres://app:p%40ss@db.internal:5432/orders?sslmode=require")
+    assert_eq_str(u.to_string(), "postgres://user:password@localhost:5432/orders?sslmode=require")
 }
 
 fun test_user_without_password() {
-    let u = Url.parse("ftp://anon@files.example.com/pub")
-    assert_eq_str(u.user, "anon")
+    let u = Url.parse("ftp://an%40on@files.example.com/pub")
+    assert_eq_str(u.user, "an@on")
     assert_eq_str(u.password, "")
     assert_eq_str(u.host, "files.example.com")
+    assert_eq_str(u.to_string(), "ftp://an%40on@files.example.com/pub")
 }
 
 fun test_ipv6_host() {
