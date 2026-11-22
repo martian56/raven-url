@@ -10,7 +10,7 @@ query map on top. No third-party dependencies.
 
 ```toml
 [dependencies]
-"github.com/martian56/raven-url" = "v0.2.0"
+"github.com/martian56/raven-url" = "v0.3.0"
 ```
 
 ## Usage
